@@ -1,0 +1,20 @@
+ {
+    [LoadColumn(0)]
+    public int PatientID { get; set; }
+ [LoadColumn(1)]
+    public int ProviderID { get; set; }
+    [LoadColumn(2)]
+    public string Gender { get; set; }
+    [LoadColumn(3)]
+    public float Age { get; set; }
+    [LoadColumn(4)]
+    public float ClaimAmount { get; set; }
+ }
+ var connectionString = "Server=yourserver;Database=yourdatabase;User 
+Id=yourusername;Password=yourpassword;";
+ var query = "SELECT PatientID, ProviderID, Gender, Age, ClaimAmount FROM 
+PatientData";
+ var loader = mlContext.Data.CreateDatabaseLoader<PatientData>();
+ loader.ConnectionString = connectionString;
+ loader.SqlCommand = query;
+ var data = loader.Load();

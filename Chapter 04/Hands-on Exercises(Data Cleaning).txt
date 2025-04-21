@@ -1,0 +1,16 @@
+ // Create a TextLoader instance with the defined schema
+ var dataLoader = mlContext.Data.CreateTextLoader(schema);
+ // Load the data into a DataView
+ var dataView = dataLoader.Load("heart_cleveland_upload.csv");
+ // Remove duplicate rows based on all columns
+ var noDupsDataView = mlContext.Data.Equals(dataView);
+ // Get the number of rows in the original and the filtered data
+ var originalRowCount = mlContext.Data.
+ CreateEnumerable<HeartData>(dataView, reuseRowObject: false).
+ Count();
+ var noDupsRowCount = mlContext.Data.
+ CreateEnumerable<HeartData>(noDupsDataView, reuseRowObject: 
+false).Count();
+// Print the results
+ Console.WriteLine($"Original data had {originalRowCount} rows. 
+After removing duplicates, there are {noDupsRowCount} rows.");

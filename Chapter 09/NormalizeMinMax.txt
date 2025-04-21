@@ -1,0 +1,9 @@
+// Define data prep estimator
+ IEstimator<ITransformer> dataPrepEstimator =
+    mlContext.Transforms.Concatenate("Features", new string[] { 
+"Size", "HistoricalPrices" })
+        .Append(mlContext.Transforms.NormalizeMinMax("Features"));
+ // Create data prep transformer
+ ITransformer dataPrepTransformer = dataPrepEstimator.Fit(data);
+ // Transform data
+ IDataView transformedData = dataPrepTransformer.Transform(data);

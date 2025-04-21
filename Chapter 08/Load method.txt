@@ -1,0 +1,12 @@
+ // Create MLContext
+ MLContext mlContext = new MLContext();
+ // Define DataViewSchema and ITransformers
+ DataViewSchema modelSchema;
+ ITransformer trainedModel;
+ // Load data prep pipeline and trained model
+ using (HttpClient client = new HttpClient())
+ {
+    Stream modelFile = await client.GetStreamAsync("<YOUR-REMOTE-FILE
+LOCATION>");
+    trainedModel = mlContext.Model.Load(modelFile, out modelSchema);
+ }

@@ -1,0 +1,55 @@
+using System;
+ using System.Collections.Generic;
+ using System.IO;
+ using System.Linq;
+ using Microsoft.ML;
+ using Microsoft.ML.Data;
+ class BinaryClassificationMetrics
+ {
+ // Define your data class
+ public class ModelInput
+ {
+        [LoadColumn(0)] public float Label;
+ [LoadColumn(1, 4)] public float[] Features;
+ }
+ // Define your prediction class
+ public class ModelOutput
+ {
+        [ColumnName("PredictedLabel")]
+ public bool Prediction { get; set; }
+ public float Probability { get; set; }
+ public float Score { get; set; }
+ }
+ static void Main(string[] args)
+ {
+ // Set your file paths
+ var dataPath = "path/to/your/data.csv";
+ var modelPath = "path/to/your/model.zip";
+ // Create a new MLContext
+ var context = new MLContext();
+ // Load data
+ var data = context.Data.LoadFromTextFile<ModelInput>(dataPath, 
+separatorChar: ',');
+ // Load model
+ var model = context.Model.Load(modelPath, out var modelSchema);
+ // Make predictions
+ var predictions = model.Transform(data);
+ // Evaluate predictions
+ var metrics = context.BinaryClassification.Evaluate(predictions);
+ // Display metrics
+        Console.WriteLine($"Accuracy: {metrics.Accuracy}");
+        Console.WriteLine($"Log-loss: {metrics.LogLoss}");
+        Console.WriteLine($"Logistic loss: {metrics.LogisticLoss}");
+        Console.WriteLine($"Entropy: {metrics.Entropy}");
+        Console.WriteLine($"AUC: {metrics.AreaUnderRocCurve}");
+        Console.WriteLine($"F1-score: {metrics.F1Score}");
+ // Additional metrics
+        Console.WriteLine($"Positive precision: {metrics.Positive 
+Precision}");
+        Console.WriteLine($"Positive recall: {metrics.PositiveRecall}");
+        Console.WriteLine($"Negative precision: {metrics.Negative 
+Precision}");
+        Console.WriteLine($"Negative recall: {metrics.NegativeRecall}");
+ }
+ }
+ 

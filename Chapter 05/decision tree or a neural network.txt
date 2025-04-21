@@ -1,0 +1,12 @@
+var pipeline = context.Transforms.Conversion.
+ MapValueToKey("Label", "FlowerType") .Append(context.Transforms.
+ Concatenate("Features", "SepalLength", "SepalWidth", "PetalLength", 
+"PetalWidth")) .Append(context.Transforms.Conversion.
+ MapKeyToValue("Label")) .Append(context.Transforms.Conversion.
+ MapKeyToValue("PredictedLabel")); var trainer = context.Transforms.
+ Conversion.MapKeyToValue("PredictedLabel") .Append(context.Transforms.
+ Conversion.MapKeyToValue("PredictedLabel")) .Append(context.
+ Transforms.Conversion.MapKeyToValue("Probability")) .Append(context.
+ MulticlassClassification.Trainers.SdcaNonCalibrated(labelColumnName: 
+"Label", maximumNumberOfIterations: 100)); var trainingPipeline = 
+pipeline.Append(trainer);

@@ -1,0 +1,75 @@
+ using System;
+ using System.Linq;
+ using Microsoft.ML;
+ using Microsoft.ML.Data;
+ class Program
+ {
+    static void Main()
+ {
+        // Create a new MLContext
+        var mlContext = new MLContext();
+        // Load your dataset (replace MyData with your data class)
+        var data =  
+mlContext.Data.LoadFromTextFile<MyData>("path/to/your/dataset.csv", 
+separatorChar: ',');
+        // Define the pipeline
+        var pipeline = mlContext.Transforms
+            .Concatenate("Features", "Feature1", "Feature2", ...) // Add 
+your features
+            .Append(mlContext.Transforms.Conversion.MapValue("Label", 
+"Label"))
+ ("Label"))
+            .Append(mlContext.Transforms.Conversion.MapKeyToValue 
+            .Append(mlContext.BinaryClassification.Trainers.LinearSupport 
+VectorMachines(labelColumnName: "Label"));
+        // Split the data
+        var trainTestSplit = mlContext.Data.TrainTestSplit(data, 
+testFraction: 0.2);
+        var trainingData = trainTestSplit.TrainSet;
+        var testingData = trainTestSplit.TestSet;
+        // Train the initial model
+        var initialModel = pipeline.Fit(trainingData);
+        // Evaluate the initial model
+        var initialMetrics =  
+mlContext.BinaryClassification.Evaluate(initialModel.Transform 
+(testingData));
+        Console.WriteLine($"Initial Model Accuracy: {initialMetrics.
+ Accuracy}");
+// Use Permutation Feature Importance to identify top features
+        var featureImportance =  
+mlContext.BinaryClassification.PermutationFeatureImportance(
+            initialModel, testingData);
+        // Identify the top N features (change N as needed)
+        var topFeatures = featureImportance
+            .OrderByDescending(pair => Math.Abs(pair.Mean))  // Order by 
+absolute importance
+            .Take(5)  // Select the top 5 features
+            .Select(pair => pair.Name);
+        // Refine the model using only the selected features
+        var refinedPipeline = mlContext.Transforms
+            .Concatenate("Features", topFeatures.ToArray())
+            .Append(mlContext.Transforms.Conversion.MapValue("Label", 
+"Label"))
+ ("Label"))
+            .Append(mlContext.Transforms.Conversion.MapKeyToValue 
+            .Append(mlContext.BinaryClassification.Trainers.LdSvm 
+(labelColumnName: "Label"));
+        var refinedModel = refinedPipeline.Fit(trainingData);
+        // Evaluate the refined model
+        var refinedMetrics =  
+mlContext.BinaryClassification.Evaluate(refinedModel.Transform 
+(testingData));
+        Console.WriteLine($"Refined Model Accuracy: {refinedMetrics.
+ Accuracy}");
+    }
+ }
+ // Define your data class
+ public class MyData
+ {
+    [LoadColumn(0)]
+    public float Feature1 { get; set; }
+    [LoadColumn(1)]
+    public float Feature2 { get; set; }
+    [LoadColumn(2)]
+    public float Label { get; set; }
+ }

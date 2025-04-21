@@ -1,0 +1,55 @@
+ using System;
+ using Microsoft.ML;
+ using Microsoft.ML.Data;
+ class AnomalyDetectionMetrics
+ {
+ // Define your data class
+ public class ModelInput
+ {
+        [LoadColumn(0)] public float Label;
+        [LoadColumn(1)] public float Score;
+ }
+ 
+ // Define your prediction class
+ public class ModelOutput
+ {
+        [ColumnName("PredictedLabel")]
+     public float Prediction { get; set; }
+ 
+     public float Score { get; set; }
+ }
+ 
+ static void Main(string[] args)
+ {
+     // Set your file path
+     var dataPath = "path/to/your/data.csv";
+     var modelPath = "path/to/your/model.zip";
+ 
+     // Create a new MLContext
+     var context = new MLContext();
+ 
+     // Load data
+     var data = context.Data.LoadFromTextFile<ModelInput>(dataPath, 
+separatorChar: ',');
+ 
+     // Load model
+     var model = context.Model.Load(modelPath, out var modelSchema);
+ 
+     // Make predictions
+     var predictions = model.Transform(data);
+ 
+     // Evaluate anomaly detection metrics
+ var metrics = context.AnomalyDetection.Evaluate(predictions, 
+labelColumnName: "Label", scoreColumnName: "Score");
+ // Display metrics
+        Console.WriteLine($"Area Under Precision-Recall Curve (AUC-PR): 
+{metrics.AreaUnderPrecisionRecallCurve}");
+        Console.WriteLine($"F1-score: {metrics.F1Score}");
+        Console.WriteLine($"Positive Precision: {metrics.
+ PositivePrecision}");
+ Console.WriteLine($"Positive Recall: {metrics.PositiveRecall}");
+        Console.WriteLine($"Negative Precision: {metrics.
+ NegativePrecision}");
+ Console.WriteLine($"Negative Recall: {metrics.NegativeRecall}");
+ }
+ }

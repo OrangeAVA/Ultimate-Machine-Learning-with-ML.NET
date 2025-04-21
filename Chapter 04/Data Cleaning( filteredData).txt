@@ -1,0 +1,11 @@
+// Filter out any row with an NaN values in "Cholesterol" column
+ var filteredData = mlContext.Data.
+ FilterRowsByMissingValues(dataView, new[] { "Cholesterol" });
+ // Here we use the mean replacement mode, which replaces the 
+value with the mean of the non-values that were not missing.
+ var meanPipeline = mlContext.Transforms.
+ ReplaceMissingValues("MissingReplaced", "Features", 
+MissingValueReplacingEstimator.ReplacementMode.Mean);
+ // Fit and transform the data
+ var transformedData1 = pipeline.Fit(dataView).
+ Transform(transformedData);

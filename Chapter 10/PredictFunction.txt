@@ -1,0 +1,47 @@
+ #r "Newtonsoft.Json"
+ #r "MyMLModel.dll" // Replace MyMLModel.dll with the name of your ML.NET 
+model assembly.
+ using System.Net;
+ using Microsoft.AspNetCore.Mvc;
+ using Microsoft.Extensions.Primitives;
+ using Newtonsoft.Json;
+ public static async Task<IActionResult> Run(HttpRequest req)
+ {
+    try
+    {
+        // Load the pre-trained ML.NET model from the "wwwroot" folder.
+var modelPath =  
+Path.Combine(Environment.GetEnvironmentVariable("AzureWebJobsScript 
+Root"), "wwwroot", "my_model.zip");
+        var mlContext = new MLContext(seed: 1);
+        var model = mlContext.Model.Load(modelPath, out var modelSchema);
+        // Get the input data from the HTTP request.
+        string requestBody = await new StreamReader(req.Body).
+ ReadToEndAsync();
+        var inputData = JsonConvert.DeserializeObject<InputData> 
+(requestBody);
+        // Make predictions using the loaded model.
+        var predictionEngine = mlContext.Model.
+ CreatePredictionEngine<InputData, OutputData>(model);
+        var result = predictionEngine.Predict(inputData);
+        // Return the prediction as JSON in the response.
+        return new JsonResult(result);
+    }
+    catch (Exception ex)
+    {
+        // Return an error response in case of any exceptions.
+        return new BadRequestObjectResult($"Error: {ex.Message}");
+    }
+ }
+ // Define your input and output data classes.
+ public class InputData
+ {
+    public float Feature1 { get; set; }
+    public float Feature2 { get; set; }
+    // Add other input features as needed.
+ }
+ public class OutputData
+ {
+    public float Prediction { get; set; }
+    // Add other output fields as needed.
+ }

@@ -1,0 +1,87 @@
+using System;
+ using Microsoft.ML;
+ using Microsoft.ML.AutoML;
+ using Microsoft.ML.Data;
+ namespace BayesianOptimizationExample
+ {
+ class Program
+ {
+     static void Main(string[] args)
+     {
+         // Create MLContext
+         var mlContext = new MLContext();
+ 
+         // Load the dataset
+         var dataPath = "path_to_your_data.csv";
+         var data = mlContext.Data.LoadFromTextFile<MyData>(dataPath, 
+separatorChar: ',');
+ 
+         // Define the pipeline
+         var pipeline = mlContext.Transforms
+                .Concatenate("Features", "Feature1", "Feature2")
+                .Append(mlContext.Transforms.NormalizeMinMax("Features"))
+                .Append(mlContext.Transforms.Conversion.MapValueToKey 
+("Label"))
+                .Append(mlContext.Transforms.Conversion.MapKeyToValue 
+("PredictedLabel"))
+             .Append(mlContext.Transforms.NormalizeMinMax("Label"))
+                .Append(mlContext.Transforms.Conversion.MapValueToKey 
+("Label"));
+ 
+         // Define the search space for hyperparameters
+         var searchSpace = new ValueRange<float>[] {
+             new ValueRange<float>("Hyperparameter1", lowerBound: 0.1f, 
+upperBound: 1.0f),
+             new ValueRange<float>("Hyperparameter2", lowerBound: 10f, 
+upperBound: 100f)
+         };
+ 
+         // Define the experiment settings
+         var experimentSettings = new BayesianExperimentSettings
+         {
+             OptimizationMetric = BinaryClassificationMetric.Accuracy,
+             TimeConstraint = TimeSpan.FromMinutes(10),
+ MaxIterations = 20
+         };
+ 
+         // Set up the Bayesian Optimization experiment
+         var experiment = 
+mlContext.Auto().reateBinaryClassificationExperiment(experimentSettings);
+ 
+         // Run the experiment
+         var result = experiment.Execute(data, pipeline, searchSpace);
+ 
+         // Retrieve the best model and its hyperparameters
+         var bestPipeline = result.BestRun.Estimator;
+         var bestHyperparameters = result.BestRun.ValidationMetrics;
+ 
+         // Train the final model using the best hyperparameters
+         var finalModel = bestPipeline.Fit(data);
+ 
+         // Use the final model for predictions
+         var testData = 
+mlContext.Data.LoadFromTextFile<MyData>("path_to_test_data.csv", 
+separatorChar: ',');
+         var predictions = finalModel.Transform(testData);
+ 
+         // Evaluate the predictions
+         var metrics = mlContext.BinaryClassification.Evaluate 
+(predictions);
+ 
+         // Display evaluation results
+         Console.WriteLine($"Accuracy: {metrics.Accuracy}");
+         Console.WriteLine($"AUC: {metrics.Auc}");
+     }
+ }
+ 
+ // Define a class to hold the data
+ class MyData
+ {
+     [LoadColumn(0)]
+     public float Feature1 { get; set; }
+ [LoadColumn(1)]
+ public float Feature2 { get; set; }
+ [LoadColumn(2)]
+ public bool Label { get; set; }
+ }
+ }

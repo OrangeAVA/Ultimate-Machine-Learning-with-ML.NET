@@ -1,0 +1,15 @@
+ var schema = new TextLoader.Column[]
+ {
+    new TextLoader.Column("Age", DataKind.Int32, 0),
+    new TextLoader.Column("Gender", DataKind.String, 1),
+new TextLoader.Column("Weight", DataKind.Single, 2),
+    new TextLoader.Column("Height", DataKind.Single, 3),
+    new TextLoader.Column("BloodPressure", DataKind.String, 4),
+    new TextLoader.Column("Cholesterol", DataKind.Single, 5),
+    new TextLoader.Column("thalac", DataKind.Int32, 0)
+ };
+ var mlContext = new MLContext();
+ // Create a TextLoader instance with the defined schema
+ var dataLoader = mlContext.Data.CreateTextLoader(schema);
+ // Load the data into a DataView
+ var dataView = dataLoader.Load("heart_cleveland_upload.csv");

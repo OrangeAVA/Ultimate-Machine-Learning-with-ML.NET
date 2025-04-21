@@ -1,0 +1,7 @@
+ pipeline.Append(mlContext.Transforms.Conversion.MapValue 
+("SeasonEncoded", "Season"))
+    .Append(mlContext.Transforms.Conversion.
+ MapKeyToValue("SeasonEncoded"))
+    .Append(mlContext.Transforms.Conversion.MapValue("Features", 
+"Features", "SeasonEncoded"))
+    .Append(mlContext.Transforms.Conversion.MapKeyToValue("Features"));

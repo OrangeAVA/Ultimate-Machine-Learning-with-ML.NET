@@ -1,0 +1,7 @@
+var pipeline = context.Transforms.Concatenate("Features", "SquareFootage", 
+"Bedrooms", "Bathrooms") .Append(context.Transforms.Conversion.MapValue 
+ToKey("Label", "Price")) .Append(context.Transforms.Conversion.MapKey 
+ToValue("Label")) .Append(context.Transforms.Conversion.MapKeyToValue 
+("Score")) .Append(context.Regression.Trainers.Sdca(labelColumnName: 
+"Label", maximumNumberOfIterations: 100)); var trainingPipeline = 
+pipeline.Append(context.Transforms.Conversion.MapKeyToValue("Score"));

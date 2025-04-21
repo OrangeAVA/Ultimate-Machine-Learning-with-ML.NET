@@ -1,0 +1,21 @@
+ ```csharp
+ // Define the number of folds to use for cross-validation
+ var numFolds = 5;
+ // Define the cross-validation strategy to use
+ var cv = new CrossValidation(numFolds: numFolds);
+ // Define the machine learning pipeline to use
+ var pipeline = new SomePipeline()
+ .Append(new SomeEstimator())
+ .Append(new SomeTransformer());
+ // Define the evaluation metric to use
+ var evaluation = new BinaryClassificationMetric("accuracy");
+ // Define the data to use for cross-validation
+ var data = mlContext.Data.LoadFromTextFile<SomeData>(path: "data.csv", 
+separatorChar: ',');
+ // Perform cross-validation and get the performance metrics for each 
+fold
+ var results = cv.CrossValidate(data, pipeline, evaluation);
+ // Compute the mean and standard deviation of the performance metrics 
+across all folds
+ var mean = results.Mean;
+ var stdDev = results.StandardDeviation;

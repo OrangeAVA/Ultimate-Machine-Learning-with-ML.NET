@@ -1,0 +1,9 @@
+var mlContext = new MLContext(); var gridSearch = mlContext.
+ Auto(); gridSearch.WithHyperParameters(new GridSearchParameterSet 
+{ new GridSearchParameter("LearningRate", typeof(float), new[] { 
+0.1f, 0.01f, 0.001f }), new GridSearchParameter("NumHiddenLayers", 
+typeof(int), new[] { 1, 2, 3 }), new GridSearchParameter("NumNeurons", 
+typeof(int), new[] { 32, 64, 128 }) }); var trainer = gridSearch.
+ CreateMulticlassClassificationTrainer(); var model = trainer.
+ Fit(trainingData); var metrics = mlContext.MulticlassClassification.
+ Evaluate(model.Transform(validationData));

@@ -1,0 +1,82 @@
+using System;
+ using System.Collections.Generic;
+ using System.Linq;
+ using Microsoft.ML;
+ using Microsoft.ML.Data;
+ using Microsoft.ML.Transforms;
+ // Define the data class
+ public class SampleData
+ {
+    [LoadColumn(0)]
+public float Feature1 { get; set; }
+    [LoadColumn(1)]
+    public float Feature2 { get; set; }
+    [LoadColumn(2)]
+    public float Feature3 { get; set; }
+    [LoadColumn(3)]
+    public float Label { get; set; }
+ }
+ // Define the output class for feature importance
+ public class FeatureImportanceResult
+ {
+    public string FeatureName { get; set; }
+    public float Importance { get; set; }
+ }
+ class Program
+ {
+    static void Main()
+    {
+        // Create MLContext
+        var mlContext = new MLContext();
+        // Load the sample data
+        var data = mlContext.Data.LoadFromTextFile<SampleData>("sample
+data.csv", separatorChar: ',');
+        // Define the initial pipeline
+        var pipeline = mlContext.Transforms.Concatenate("Features", 
+"Feature1", "Feature2", "Feature3")
+            .Append(mlContext.Transforms.Conversion.MapValue("Label", 
+"Label"))
+            .Append(mlContext.Transforms.Conversion.MapKeyToValue 
+("Label"))
+ .Append(mlContext.Regression.Trainers.Sdca());
+        // Train the initial model
+        var initialModel = pipeline.Fit(data);
+        // Use Permutation Feature Importance
+        var permutationImportance =  
+mlContext.Regression.PermutationFeatureImportance(initialModel, data);
+        // Display feature importance
+        var featureImportanceResults = permutationImportance
+            .Select((name, importance) => new FeatureImportanceResult { 
+FeatureName = name, Importance = importance })
+            .OrderByDescending(result => Math.Abs(result.Importance))
+            .ToList();
+        Console.WriteLine("Feature Importance:");
+        foreach (var result in featureImportanceResults)
+        {
+            Console.WriteLine($"{result.FeatureName}: {result.
+ Importance}");
+        }
+        // Select the top N features
+        var topFeatures = featureImportanceResults.Take(2).Select(result 
+=> result.FeatureName).ToArray();
+        // Refine the model using only the selected features
+        var refinedPipeline = mlContext.Transforms.Concatenate 
+("Features", topFeatures)
+            .Append(mlContext.Transforms.Conversion.MapValue("Label", 
+"Label"))
+            .Append(mlContext.Transforms.Conversion.
+ MapKeyToValue("Label"))
+            .Append(mlContext.Regression.Trainers.Sdca());
+        var refinedModel = refinedPipeline.Fit(data);
+        // Evaluate the models
+ var initialMetrics =  
+mlContext.Regression.Evaluate(initialModel.Transform(data));
+        var refinedMetrics =  
+mlContext.Regression.Evaluate(refinedModel.Transform(data));
+        // Compare the performance
+        Console.WriteLine("\nInitial Model Metrics:");
+        Console.WriteLine($"R-Squared: {initialMetrics.RSquared}");
+        Console.WriteLine("\nRefined Model Metrics:");
+        Console.WriteLine($"R-Squared: {refinedMetrics.RSquared}");
+    }
+ }

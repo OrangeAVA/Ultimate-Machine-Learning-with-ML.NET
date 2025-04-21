@@ -1,0 +1,72 @@
+using System;
+ using Microsoft.ML;
+ using Microsoft.ML.Data;
+ class MultiClassAndTextClassificationMetrics
+ {
+ // Define your data class
+ public class ModelInput
+ {
+ }
+        [LoadColumn(0)] public string Label;
+        [LoadColumn(1)] public string Text;
+ // Define your prediction class
+ public class ModelOutput
+ {
+        [ColumnName("PredictedLabel")]
+public string Prediction { get; set; }
+ 
+     public float[] Score { get; set; }
+ }
+ 
+ static void Main(string[] args)
+ {
+     // Set your file paths
+     var dataPath = "path/to/your/data.csv";
+     var modelPath = "path/to/your/model.zip";
+ 
+     // Create a new MLContext
+     var context = new MLContext();
+ 
+     // Load data
+     var data = context.Data.LoadFromTextFile<ModelInput>(dataPath, 
+separatorChar: ',');
+ 
+     // Load model
+     var model = context.Model.Load(modelPath, out var modelSchema);
+ 
+     // Make predictions
+     var predictions = model.Transform(data);
+ 
+     // Evaluate multi-class classification model
+     var metrics = context.MulticlassClassification.Evaluate(predictions);
+ 
+     // Display metrics
+        Console.WriteLine($"Log-loss: {metrics.LogLoss}");
+        Console.WriteLine($"Per-class Log-loss: {string.Join(", ", 
+metrics.PerClassLogLoss)}");
+        Console.WriteLine($"Micro accuracy: {metrics.MicroAccuracy}");
+        Console.WriteLine($"Macro accuracy: {metrics.MacroAccuracy}");
+        Console.WriteLine($"Logistic loss: {metrics.LogisticLoss}");
+ 
+     // Text classification example
+     var textData = new[]
+     {
+new ModelInput { Text = "Your text here", Label = "Label" 
+}
+ // Add more text samples as needed
+ };
+ // Make text predictions
+ var textPredictions = model.Transform(context.Data.LoadFrom 
+Enumerable(textData));
+ // Display text predictions
+ var textResults = context.Data.
+ CreateEnumerable<ModelOutput>(textPredictions, reuseRowObject: false);
+ foreach (var result in textResults)
+ {
+            Console.WriteLine($"Text: {result.Text}, Predicted Label: 
+{result.Prediction}");
+            Console.WriteLine($"Scores: {string.Join(", ", result.
+ Score)}");
+ }
+ }
+ }

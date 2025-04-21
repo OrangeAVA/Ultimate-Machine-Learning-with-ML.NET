@@ -1,0 +1,76 @@
+ ```csharp
+ using System;
+ using System.Linq;
+ using Microsoft.ML;
+ using Microsoft.ML.Data;
+ namespace ClassificationMetricsExample
+ {
+ class Program
+ {
+     static void Main(string[] args)
+     {
+         // Create a new MLContext
+         var context = new MLContext();
+ 
+         // Load the data into an IDataView
+         var data =  
+context.Data.LoadFromTextFile<IrisData>("path_to_data_file.csv", 
+separatorChar: ',');
+ 
+         // Split the data into training and testing sets
+         var (trainData, testData) = context.Data.TrainTestSplit(data, 
+testFraction: 0.2);
+ 
+         // Define the data preprocessing pipeline
+         var pipeline = context.Transforms.Conversion.MapValueToKey 
+("Label")
+             .Append(context.Transforms.Concatenate("Features", 
+"SepalLength", "SepalWidth", "PetalLength", "PetalWidth"))
+                .Append(context.Transforms.NormalizeMinMax(“Features”))
+ .Append(context.Transforms.Conversion.MapKeyToValue("PredictedLabel"));
+ 
+         // Train the model
+         var model = pipeline.Fit(trainData);
+ 
+         // Make predictions on the test set
+         var predictions = model.Transform(testData);
+ 
+         // Evaluate the model
+         var metrics = context.MulticlassClassification.Evaluate 
+(predictions);
+ 
+         // Retrieve the evaluation metrics
+         var accuracy = metrics.MacroAccuracy;
+var perClassMetrics = metrics.PerClassLogLoss.Select(x => 
+x.Value);
+         var recall = perClassMetrics.Average();
+         var f1Score = (2 * accuracy * recall) / (accuracy + 
+recall);
+ 
+         // Print the evaluation metrics
+         Console.WriteLine($"Accuracy: {accuracy}");
+         Console.WriteLine($"Recall: {recall}");
+         Console.WriteLine($"F1 Score: {f1Score}");
+     }
+ }
+ 
+ // Define the data class
+ class IrisData
+ {
+     [LoadColumn(0)]
+     public float SepalLength;
+ 
+     [LoadColumn(1)]
+     public float SepalWidth;
+ 
+     [LoadColumn(2)]
+     public float PetalLength;
+ 
+     [LoadColumn(3)]
+     public float PetalWidth;
+ 
+     [LoadColumn(4)]
+     public string Label;
+ }
+ }
+ ```

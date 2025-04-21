@@ -1,0 +1,12 @@
+ var pipeline = context.Transforms.Conversion.MapValueToKey("Label", 
+"WillPurchase") .Append(context.Transforms.Concatenate("Features", 
+"Age", "Income", "BrowsingHistory")) .Append(context.Transforms.
+ NormalizeMinMax("Features")) .Append(context.Transforms.Conversion.
+ MapKeyToValue("Label")) .Append(context.Transforms.Conversion.
+ MapKeyToValue("PredictedLabel")) .Append(context.Transforms.
+ Conversion.MapKeyToValue("Probability")) .Append(context.Transforms.
+ Conversion.MapKeyToValue("Score")) .Append(context.Transforms.
+ Conversion.MapKeyToValue("PredictedLabel")); var trainer = context.
+ BinaryClassification.Trainers.LogisticRegression(labelColumnName: 
+"Label", maximumNumberOfIterations: 100); var trainingPipeline = 
+pipeline.Append(trainer);

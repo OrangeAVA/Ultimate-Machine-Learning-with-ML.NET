@@ -1,0 +1,16 @@
+ var pipeline5 = mlContext.Transforms.Conversion.MapValue(
+    "BMI",
+    "Weight",
+    "Height",
+    (weight, height) => weight / (height * height)
+ );
+ // Fit and transform the data
+ var transformedData22 = pipeline.Fit(dataView).
+ Transform(dataView);
+ b. Perform one-hot encoding or label encoding on categorical features in the 
+heart disease dataset.
+ var pipeline4 = mlContext.Transforms.Categorical.
+ OneHotEncoding("EncodedChestPainType", "ChestPainType");
+ // Fit and transform the data
+ var transformedData1111 = pipeline.Fit(dataView).
+ Transform(dataView);
